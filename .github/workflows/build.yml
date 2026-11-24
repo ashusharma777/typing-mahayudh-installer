@@ -1,0 +1,32 @@
+name: Build Windows installer
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish app
+        run: dotnet publish src/TypingMahayudh.csproj -c Release -o publish
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\TypingMahayudh.iss'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TypingMahayudh-Setup
+          path: |
+            dist/*.exe
+            publish/**
